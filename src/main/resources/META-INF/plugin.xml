@@ -5,17 +5,16 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Compare-plugin</name>
+    <name>Compare (External) Folders/Files</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="barrylev10@gmail.com" url="https://www.yourcompany.com">YourCompany</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    This plugin allows you to compare files and folders that reside outside of your project.
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -27,4 +26,14 @@
     <extensions defaultExtensionNs="com.intellij">
 
     </extensions>
+
+    <actions>
+        <action id="org.extremely.compareplugin.actions.CompareAction"
+                class="org.extremely.compareplugin.actions.CompareAction"
+                text="Compare (External) Files/Folders"
+                description="Compare files or folders that are external to the project"
+                icon="icons.CompareIcons.compareIcon">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+    </actions>
 </idea-plugin>
