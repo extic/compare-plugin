@@ -1,5 +1,6 @@
 package org.extremely.compareplugin.dialog
 
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.DialogWrapper
@@ -10,11 +11,9 @@ import net.miginfocom.swing.MigLayout
 import org.extremely.compareplugin.uil.addChangeListener
 import java.awt.Dimension
 import java.awt.event.ActionEvent
-import java.lang.Boolean
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.*
-import kotlin.String
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
@@ -33,7 +32,7 @@ class CompareDialogWrapper : DialogWrapper(true) {
 
     private inner class MyCustomAction : AbstractAction("Compare", CompareIcons.compareIcon) {
         init {
-            this.putValue("DefaultAction", Boolean.TRUE)
+            this.putValue("DefaultAction", true)
         }
 
         override fun actionPerformed(e: ActionEvent?) {
@@ -47,6 +46,11 @@ class CompareDialogWrapper : DialogWrapper(true) {
     }
 
     override fun createCenterPanel(): JComponent {
+        PropertiesComponent.getInstance().run {
+            leftPaneTextField.text = this.getValue("org.extremely.compare-plugin.comparisonLeftPane")
+            rightPaneTextField.text = this.getValue("org.extremely.compare-plugin.comparisonRightPane")
+        }
+
         leftPaneTextField.addChangeListener { validateDialog() }
         rightPaneTextField.addChangeListener { validateDialog() }
 
@@ -104,6 +108,11 @@ class CompareDialogWrapper : DialogWrapper(true) {
     private fun validateDialog() {
         errorField.text = ""
         this.okAction.isEnabled = false
+
+        PropertiesComponent.getInstance().run {
+            this.setValue("org.extremely.compare-plugin.comparisonLeftPane", leftPaneTextField.text)
+            this.setValue("org.extremely.compare-plugin.comparisonRightPane", rightPaneTextField.text)
+        }
 
         if (leftPaneTextField.text.isNullOrEmpty() && rightPaneTextField.text.isNullOrEmpty()) {
             return
