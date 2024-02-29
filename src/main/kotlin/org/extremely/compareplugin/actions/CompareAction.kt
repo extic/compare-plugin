@@ -15,8 +15,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.util.io.isDirectory
+import org.extremely.compareplugin.dialog.CompareDialogWrapper
+import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import javax.swing.Icon
 
 class CompareAction : AnAction {
@@ -24,40 +26,36 @@ class CompareAction : AnAction {
         return ActionUpdateThread.BGT
     }
 
-    /**
-     * This default constructor is used by the IntelliJ Platform framework to instantiate this class based on plugin.xml
-     * declarations. Only needed in [CompareAction] class because a second constructor is overridden.
-     */
     constructor() : super()
 
-    /**
-     * This constructor is used to support dynamically added menu actions.
-     * It sets the text, description to be displayed for the menu item.
-     * Otherwise, the default AnAction constructor is used by the IntelliJ Platform.
-     *
-     * @param text        The text to be displayed as a menu item.
-     * @param description The description of the menu item.
-     * @param icon        The icon to be used with the menu item.
-     */
     constructor(text: String?, description: String?, icon: Icon?) : super(text, description, icon)
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project!!
 
-        val content1: DocumentContent = DiffContentFactory.getInstance().create("aaa barak levinsonasd")
-        val content2: DocumentContent = DiffContentFactory.getInstance().create("fasf barak asfasfafs levinson");
-        val request = SimpleDiffRequest("Window Title", content1, content2, "Title 1", "Title 2")
-        DiffManager.getInstance().showDiff(project, request)
+        val compareDialogWrapper = CompareDialogWrapper()
+        if (compareDialogWrapper.showAndGet()) {
+            if (compareDialogWrapper.getLeftPath().isDirectory()) {
+                compareDirectories(project, compareDialogWrapper.getLeftPath(), compareDialogWrapper.getRightPath())
+            } else {
+                compareFiles(project, compareDialogWrapper.getLeftPath(), compareDialogWrapper.getRightPath())
+            }
+        }
+    }
 
-
-        val firstPath = Paths.get("C:\\work\\sy-main\\etc\\tests\\regression_bin\\external\\old")
-        val secondPath = Paths.get("C:\\work\\sy-main\\etc\\tests\\regression_bin\\external\\new")
-
-        val firstElement = getDirDiffElementFromPath(firstPath, project)
-        val secondElement = getDirDiffElementFromPath(secondPath, project)
+    private fun compareDirectories(project: Project, leftPath: Path, rightPath: Path) {
+        val leftElement = getDirDiffElementFromPath(leftPath, project)
+        val rightElement = getDirDiffElementFromPath(rightPath, project)
 
         val dirDiffSettings = buildDirDiffSettingsFromApplicationSettings();
-        DirDiffManager.getInstance(project).showDiff(firstElement, secondElement, dirDiffSettings)
+        DirDiffManager.getInstance(project).showDiff(leftElement, rightElement, dirDiffSettings)
+    }
+
+    private fun compareFiles(project: Project, leftPath: Path, rightPath: Path) {
+        val leftContent: DocumentContent = DiffContentFactory.getInstance().create(Files.readString(leftPath))
+        val rightContent: DocumentContent = DiffContentFactory.getInstance().create(Files.readString(rightPath));
+        val request = SimpleDiffRequest("File Comparison", leftContent, rightContent, leftPath.toFile().absolutePath, rightPath.toFile().absolutePath)
+        DiffManager.getInstance().showDiff(project, request)
     }
 
     override fun update(e: AnActionEvent) {
